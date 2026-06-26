@@ -165,6 +165,10 @@ class TradingBot:
         if in_kz or has_choch:
             self.notifier.scan_report(summary)
 
+        # 7. Heartbeat every 30 min (6 cycles off-peak, 6 cycles killzone)
+        if self._cycle_count % 6 == 0:
+            self.notifier.heartbeat(balance_eur, len(positions), wat_hour, in_kz)
+
         self._save_state()
 
     def run(self):
@@ -182,8 +186,10 @@ class TradingBot:
 
         self.mcp.init_session()
         self.notifier.status("Bot v2 started")
+        self._cycle_count = 0
 
         while True:
+            self._cycle_count += 1
             try:
                 self.run_cycle()
             except KeyboardInterrupt:

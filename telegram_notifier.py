@@ -55,3 +55,13 @@ class TelegramNotifier:
 
     def status(self, text):
         self.send(f"ℹ️ {text}")
+
+    def heartbeat(self, balance, pos_count, wat_hour, in_kz):
+        msg = (
+            f"💓 <b>Bot Alive</b>\n"
+            f"Balance: {balance:.2f} EUR\n"
+            f"Positions: {pos_count}\n"
+            f"WAT: {wat_hour}:00 {'🟢' if in_kz else '🔴'}\n"
+            f"Next scan: {'5' if in_kz else '15'} min"
+        )
+        self.send(msg)

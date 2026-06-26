@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: smc-trading-bot
+    runtime: python
+    buildCommand: ""
+    startCommand: python server.py
+    healthCheckPath: /health
+    plan: free
+    region: frankfurt
+    envVars:
+      - key: MCP_TOKEN
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_BASE_URL
+        value: https://opencode.ai/zen/v1
+      - key: LLM_MODEL
+        value: deepseek-v4-flash-free

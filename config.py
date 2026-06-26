@@ -8,14 +8,14 @@ MCP_TOKEN = os.environ.get(
 )
 
 # === LLM (OpenAI-compatible) ===
-LLM_API_KEY = os.environ.get("LLM_API_KEY", "")
+LLM_API_KEY = os.environ.get("LLM_API_KEY", "sk-Jojj8PMfoLrwYTDdgs6VGGXcngGC9HV3MZJMaeT2fSpaJzZbTuff0QIWZvsDWiox")
 LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "https://opencode.ai/zen/v1")
 LLM_MODEL = os.environ.get("LLM_MODEL", "deepseek-v4-flash-free")
 LLM_ENABLED = True
 
 # === Telegram ===
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8962170215:AAEE4h75pi3tY9gDOu_Ie32xnXrZn-2vfi8")
+TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "7769118090")
 
 # === Account ===
 MONEY_DIGITS = 2

@@ -47,24 +47,42 @@ class MCPClient:
                         return {"text": txt}
         return {}
 
-    def call(self, name, args):
-        body = {
-            "jsonrpc": "2.0", "id": int(time.time() * 1000) % 100000,
-            "method": "tools/call",
-            "params": {"name": name, "arguments": args}
-        }
-        req = urllib.request.Request(
-            MCP_BASE_URL, data=json.dumps(body).encode(),
-            headers=self.headers, method="POST"
-        )
-        try:
-            resp = urllib.request.urlopen(req, timeout=20)
-            return self._parse_result(resp.read())
-        except urllib.error.HTTPError as e:
-            err = e.read().decode()[:300]
-            return {"error": f"HTTP {e.code}: {err}"}
-        except Exception as e:
-            return {"error": str(e)}
+    def is_connection_error(self, err_str):
+        err_lower = err_str.lower()
+        keywords = ["timeout", "reset", "refused", "eof", "broken pipe",
+                     "connection", "name resolution", "no route", "network",
+                     "econnreset", "econnrefused", "etimedout"]
+        return any(k in err_lower for k in keywords)
+
+    def call(self, name, args, retries=3):
+        for attempt in range(retries):
+            body = {
+                "jsonrpc": "2.0", "id": int(time.time() * 1000) % 100000,
+                "method": "tools/call",
+                "params": {"name": name, "arguments": args}
+            }
+            req = urllib.request.Request(
+                MCP_BASE_URL, data=json.dumps(body).encode(),
+                headers=self.headers, method="POST"
+            )
+            try:
+                resp = urllib.request.urlopen(req, timeout=30)
+                return self._parse_result(resp.read())
+            except urllib.error.HTTPError as e:
+                err = e.read().decode()[:300]
+                return {"error": f"HTTP {e.code}: {err}"}
+            except Exception as e:
+                err_str = str(e)
+                if attempt < retries - 1 and self.is_connection_error(err_str):
+                    print(f"  ↻ Connection lost ({err_str[:50]}), reconnecting...")
+                    time.sleep(2 ** attempt)
+                    try:
+                        self.init_session()
+                    except:
+                        pass
+                    continue
+                return {"error": err_str}
+        return {"error": "Max retries exceeded"}
 
     def get_balance(self):
         return self.call("get_balance", {})

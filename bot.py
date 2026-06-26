@@ -43,11 +43,16 @@ class TradingBot:
     def _current_hour_wat(self):
         return (datetime.now(timezone.utc) + timedelta(hours=1)).hour
 
+    def _is_weekend(self):
+        return datetime.now(timezone.utc).weekday() in (5, 6)
+
     def _in_killzone(self, hour):
         return (KILLZONE_LONDON[0] <= hour < KILLZONE_LONDON[1] or
                 KILLZONE_NY[0] <= hour < KILLZONE_NY[1])
 
     def _scan_interval_mins(self):
+        if self._is_weekend():
+            return 30
         hour = self._current_hour_wat()
         in_kz = self._in_killzone(hour)
         has_pos = len(self.state.get("position_ids", [])) > 0
@@ -66,7 +71,8 @@ class TradingBot:
 
     def scan_all(self):
         results = []
-        for sid, (name, div) in SCAN_LIST.items():
+        symbols = {22395: ("BTCUSD", 100000), 22397: ("ETHUSD", 100000)} if self._is_weekend() else SCAN_LIST
+        for sid, (name, div) in symbols.items():
             try:
                 r = self._fetch_and_analyze(sid, "M_15", div, 24, 3)
                 if not r:
@@ -109,8 +115,13 @@ class TradingBot:
         in_kz = self._in_killzone(wat_hour)
         ts = datetime.now(timezone.utc).strftime('%H:%M:%S')
 
-        print(f"\n{'─'*60}")
-        print(f"  [{ts}] WAT {wat_hour}:00 {'🟢 KILLZONE' if in_kz else '🔴 OFF-PEAK'}")
+        is_we = self._is_weekend()
+        if is_we:
+            print(f"\n{'─'*60}")
+            print(f"  [{ts}] 🏁 WEEKEND — crypto only")
+        else:
+            print(f"\n{'─'*60}")
+            print(f"  [{ts}] WAT {wat_hour}:00 {'🟢 KILLZONE' if in_kz else '🔴 OFF-PEAK'}")
 
         # 1. Fetch live state
         balance = self.mcp.get_balance()
@@ -167,7 +178,7 @@ class TradingBot:
 
         # 7. Heartbeat every 30 min (6 cycles off-peak, 6 cycles killzone)
         if self._cycle_count % 6 == 0:
-            self.notifier.heartbeat(balance_eur, len(positions), wat_hour, in_kz)
+            self.notifier.heartbeat(balance_eur, len(positions), wat_hour, in_kz, weekend=self._is_weekend())
 
         self._save_state()
 

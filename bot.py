@@ -171,13 +171,13 @@ class TradingBot:
                 result = self.executor.handle_decision(decision, balance_eur, self.name_map)
                 print(f"  → Order: {result.get('status','?')} — {result.get('error','')[:60]}")
 
-        # 6. Telegram report (interesting scans)
+        # 6. Telegram scan report — always send (brief off-peak, full in killzone)
         has_choch = any(r.get("choch") for r in results[:5])
-        if in_kz or has_choch:
+        if has_choch or self._cycle_count % 2 == 0:
             self.notifier.scan_report(summary)
 
-        # 7. Heartbeat every 30 min (6 cycles off-peak, 6 cycles killzone)
-        if self._cycle_count % 6 == 0:
+        # 7. Heartbeat every 30 min (3 cycles off-peak, ~15 min in killzone)
+        if self._cycle_count % 3 == 0:
             self.notifier.heartbeat(balance_eur, len(positions), wat_hour, in_kz, weekend=self._is_weekend())
 
         self._save_state()

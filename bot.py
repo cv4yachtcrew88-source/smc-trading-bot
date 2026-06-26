@@ -6,6 +6,7 @@ from config import (
     BASE_INTERVAL_MINS, KILLZONE_INTERVAL_MINS,
     ACTIVE_POSITION_INTERVAL_MINS,
     KILLZONE_LONDON, KILLZONE_NY,
+    MAX_RISK_PERCENT,
 )
 from mcp_client import MCPClient
 from smc_analysis import SMCAnalyzer
